@@ -12,7 +12,8 @@
       "Bash(npm install:*)",
       "Bash(open -a \"Google Chrome\" http://localhost:8081)",
       "Bash(open http://localhost:8081)",
-      "Bash(npm cache clean:*)"
+      "Bash(npm cache clean:*)",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": []
