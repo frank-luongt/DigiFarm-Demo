@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "DigiFarm",
+    "slug": "digifarm-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2E7D32",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.digifarm.mobile"
+    },
+    "android": {
+      "package": "com.digifarm.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#2E7D32"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow DigiFarm to access your photos to document farm activities."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow DigiFarm to use your location to map farm boundaries."
+        }
+      ]
+    ]
+  }
+}

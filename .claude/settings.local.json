@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo start --web)",
+      "Bash(npx expo start)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx expo start:*)",
+      "Bash(killall node:*)",
+      "Bash(npx expo install:*)",
+      "Bash(npm install:*)",
+      "Bash(open -a \"Google Chrome\" http://localhost:8081)",
+      "Bash(open http://localhost:8081)",
+      "Bash(npm cache clean:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
