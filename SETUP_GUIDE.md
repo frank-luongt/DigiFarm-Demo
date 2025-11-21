@@ -235,9 +235,9 @@ The prototype includes realistic farming data:
 
 ### Farm Profile
 - **Name**: Green Valley Farm
-- **Location**: Karnataka, India
+- **Location**: Tay Ninh, Vietnam
 - **Total Area**: 25.5 acres
-- **Owner**: Rajesh Kumar
+- **Owner**: Frank Luong
 
 ### Plots
 1. **North Field** - 8.5 acres - Tomato (Roma variety)
@@ -275,8 +275,8 @@ Edit `src/screens/Auth/LoginScreen.js`:
 
 ```javascript
 const demoUser = {
-  name: 'Frank Luong',  // Change this
-  phone: '+84 982 646868',
+  name: 'Your Name Here',  // Change this
+  phone: '+91 98765 43210',
   language: 'English',
 };
 ```
