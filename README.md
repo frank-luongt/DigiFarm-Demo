@@ -106,9 +106,9 @@ DigiFarm Mobile enables farmers to:
 The app includes a **Quick Demo Access** button on the login screen that allows you to bypass authentication and explore the app immediately with pre-loaded synthetic data.
 
 **Demo Credentials:**
-- Farmer Name: Rajesh Kumar
+- Farmer Name: Luong Tuan Thanh
 - Farm: Green Valley Farm (25.5 acres)
-- Location: Karnataka, India
+- Location: Mekong Delta, Vietnam
 - Plots: 3 active plots (Tomato, Rice, Wheat)
 
 ## 📊 Synthetic Data

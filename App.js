@@ -163,15 +163,13 @@ export default function App() {
   return (
     <DataProvider>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {!isAuthenticated ? (
-            <>
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            </>
-          ) : (
-            <Stack.Screen name="Main" component={MainTabs} />
-          )}
+        <Stack.Navigator
+          screenOptions={{ headerShown: false }}
+          initialRouteName={isAuthenticated ? 'Main' : 'Login'}
+        >
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Main" component={MainTabs} />
         </Stack.Navigator>
       </NavigationContainer>
     </DataProvider>

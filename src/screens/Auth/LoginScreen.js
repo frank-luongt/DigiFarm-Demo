@@ -10,9 +10,12 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, Typography, Spacing, BorderRadius, Elevation, Components } from '../../theme/design-tokens';
 
 export default function LoginScreen({ navigation }) {
   const [phoneNumber, setPhoneNumber] = useState('907270184');
+  const [focused, setFocused] = useState(false);
 
   const handleLogin = async () => {
     if (phoneNumber.length < 9) {
@@ -20,29 +23,35 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    // For prototype, skip OTP and login directly
-    // Check if user exists, otherwise go to onboarding
-    const existingUser = await AsyncStorage.getItem('user');
+    try {
+      // Store user data in AsyncStorage
+      const userData = {
+        name: 'Luong Tuan Thanh',
+        phone: phoneNumber,
+        email: 'luongthanh@digifarm.vn',
+      };
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
 
-    if (existingUser) {
-      // User exists, navigate to main app
       navigation.replace('Main');
-    } else {
-      // New user, go to onboarding
-      await AsyncStorage.setItem('tempPhone', '+84' + phoneNumber);
-      navigation.navigate('Onboarding');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save user data');
     }
   };
 
   const handleQuickDemo = async () => {
-    // For quick demo access, create a demo user
-    const demoUser = {
-      name: 'Nguyen Van A',
-      phone: '+84 907270184',
-      language: 'Vietnamese',
-    };
-    await AsyncStorage.setItem('user', JSON.stringify(demoUser));
-    navigation.replace('Main');
+    try {
+      // Store demo user data in AsyncStorage
+      const userData = {
+        name: 'Luong Tuan Thanh',
+        phone: '907270184',
+        email: 'luongthanh@digifarm.vn',
+      };
+      await AsyncStorage.setItem('user', JSON.stringify(userData));
+
+      navigation.replace('Main');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save user data');
+    }
   };
 
   return (
@@ -51,47 +60,78 @@ export default function LoginScreen({ navigation }) {
       style={styles.container}
     >
       <View style={styles.content}>
-        {/* Logo Section */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoText}>🌱</Text>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <View style={styles.iconWrapper}>
+              <Ionicons name="leaf" size={32} color={Colors.green40} />
+            </View>
           </View>
-          <Text style={styles.appName}>DigiFarm</Text>
-          <Text style={styles.tagline}>Digitalize Your Farming Operations</Text>
+          <Text style={styles.title}>DigiFarm</Text>
+          <Text style={styles.subtitle}>Modern farm management platform</Text>
         </View>
 
-        {/* Login Form */}
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.phoneInputContainer}>
-            <Text style={styles.countryCode}>+84</Text>
-            <TextInput
-              style={styles.phoneInput}
-              placeholder="Enter your phone number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-              maxLength={10}
-            />
+        {/* Form Section */}
+        <View style={styles.formSection}>
+          <Text style={styles.formTitle}>Sign in</Text>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Phone number</Text>
+            <View style={[
+              styles.inputContainer,
+              focused && styles.inputContainerFocused
+            ]}>
+              <View style={styles.prefix}>
+                <Text style={styles.prefixText}>+84</Text>
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter phone number"
+                placeholderTextColor={Colors.text03}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+                maxLength={10}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+              />
+            </View>
+            <Text style={styles.helperText}>Default: 907270184 (Luong Tuan Thanh)</Text>
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin}>
-            <Text style={styles.buttonText}>Login</Text>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={handleLogin}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.primaryButtonText}>Continue</Text>
+            <Ionicons name="arrow-forward" size={16} color={Colors.text04} style={styles.buttonIcon} />
           </TouchableOpacity>
-        </View>
 
-        {/* Quick Demo Button */}
-        <View style={styles.demoContainer}>
-          <TouchableOpacity style={styles.demoButton} onPress={handleQuickDemo}>
-            <Text style={styles.demoButtonText}>Quick Demo Access</Text>
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={handleQuickDemo}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>Explore demo</Text>
           </TouchableOpacity>
-          <Text style={styles.demoSubtext}>Skip login and explore the app</Text>
         </View>
 
         {/* Footer */}
-        <Text style={styles.footer}>
-          By continuing, you agree to our Terms & Privacy Policy
-        </Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            By continuing, you agree to our{' '}
+            <Text style={styles.footerLink}>Terms of Service</Text>
+            {' '}and{' '}
+            <Text style={styles.footerLink}>Privacy Policy</Text>
+          </Text>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -100,122 +140,153 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.ui01,
   },
   content: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
+    paddingHorizontal: Spacing.spacing05,
+    paddingTop: Spacing.spacing10,
+    paddingBottom: Spacing.spacing07,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'flex-start',
+    marginBottom: Spacing.spacing08,
   },
   logoContainer: {
-    alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: Spacing.spacing06,
   },
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E8F5E9',
+  iconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.green10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
   },
-  logoText: {
-    fontSize: 48,
+  title: {
+    fontSize: Typography.fontSize.productiveHeading06,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing03,
+    letterSpacing: Typography.letterSpacing.normal,
   },
-  appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2E7D32',
-    marginBottom: 8,
+  subtitle: {
+    fontSize: Typography.fontSize.bodyShort02,
+    color: Colors.text02,
+    letterSpacing: Typography.letterSpacing.normal,
   },
-  tagline: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+  formSection: {
+    flex: 1,
   },
-  formContainer: {
-    marginBottom: 32,
+  formTitle: {
+    fontSize: Typography.fontSize.productiveHeading04,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing07,
+  },
+  fieldGroup: {
+    marginBottom: Spacing.spacing06,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.label01,
+    fontWeight: Typography.fontWeight.regular,
+    color: Colors.text02,
+    marginBottom: Spacing.spacing03,
   },
-  phoneInputContainer: {
+  inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    height: Components.input.height.lg,
+    backgroundColor: Colors.field01,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    marginBottom: 16,
-    backgroundColor: '#fff',
+    borderColor: Colors.ui04,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.ui04,
   },
-  countryCode: {
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#333',
+  inputContainerFocused: {
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.focus,
+  },
+  prefix: {
+    width: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.ui02,
     borderRightWidth: 1,
-    borderRightColor: '#ddd',
+    borderRightColor: Colors.ui03,
   },
-  phoneInput: {
-    flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    fontSize: 16,
+  prefixText: {
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.regular,
+    color: Colors.text01,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    marginBottom: 16,
+    flex: 1,
+    paddingHorizontal: Spacing.spacing05,
+    fontSize: Typography.fontSize.bodyShort02,
+    color: Colors.text01,
+    fontWeight: Typography.fontWeight.regular,
   },
-  button: {
-    backgroundColor: '#2E7D32',
-    paddingVertical: 16,
-    borderRadius: 8,
+  helperText: {
+    fontSize: Typography.fontSize.helperText01,
+    color: Colors.text02,
+    marginTop: Spacing.spacing03,
+  },
+  primaryButton: {
+    height: Components.button.height.lg,
+    backgroundColor: Colors.interactive,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginTop: Spacing.spacing07,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  primaryButtonText: {
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.regular,
+    color: Colors.text04,
   },
-  resendText: {
-    color: '#2E7D32',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
+  buttonIcon: {
+    marginLeft: Spacing.spacing03,
   },
-  demoContainer: {
+  divider: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginVertical: Spacing.spacing06,
   },
-  demoButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.ui03,
+  },
+  dividerText: {
+    fontSize: Typography.fontSize.label01,
+    color: Colors.text03,
+    paddingHorizontal: Spacing.spacing05,
+  },
+  secondaryButton: {
+    height: Components.button.height.lg,
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#2E7D32',
-    borderRadius: 8,
-    marginBottom: 8,
+    borderColor: Colors.interactive,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  demoButtonText: {
-    color: '#2E7D32',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  demoSubtext: {
-    fontSize: 12,
-    color: '#999',
+  secondaryButtonText: {
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.regular,
+    color: Colors.interactive,
   },
   footer: {
-    fontSize: 12,
-    color: '#999',
+    paddingTop: Spacing.spacing06,
+  },
+  footerText: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
     textAlign: 'center',
+    lineHeight: Typography.lineHeight.normal * Typography.fontSize.caption01,
+  },
+  footerLink: {
+    color: Colors.link01,
+    fontWeight: Typography.fontWeight.semibold,
   },
 });

@@ -197,7 +197,7 @@ export default function AddHarvestScreen({ navigation }) {
             />
           </View>
           <View style={styles.halfInput}>
-            <Text style={styles.label}>Labor Cost (₹)</Text>
+            <Text style={styles.label}>Labor Cost (₫)</Text>
             <TextInput
               style={styles.input}
               placeholder="0"

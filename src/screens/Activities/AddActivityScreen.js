@@ -177,7 +177,7 @@ export default function AddActivityScreen({ navigation }) {
             />
           </View>
           <View style={styles.halfInput}>
-            <Text style={styles.label}>Labor Cost (₹)</Text>
+            <Text style={styles.label}>Labor Cost (₫)</Text>
             <TextInput
               style={styles.input}
               placeholder="0"
@@ -189,7 +189,7 @@ export default function AddActivityScreen({ navigation }) {
         </View>
 
         {/* Material Cost */}
-        <Text style={styles.label}>Material Cost (₹)</Text>
+        <Text style={styles.label}>Material Cost (₫)</Text>
         <TextInput
           style={styles.input}
           placeholder="0"

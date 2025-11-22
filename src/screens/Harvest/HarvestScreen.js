@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
+import { Colors, Typography, Spacing, BorderRadius, IconSize, Elevation } from '../../theme/design-tokens';
 
 export default function HarvestScreen({ navigation }) {
   const { harvests, plots } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGrade, setFilterGrade] = useState('All');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const grades = ['All', 'A', 'B', 'C'];
 
@@ -53,24 +55,32 @@ export default function HarvestScreen({ navigation }) {
 
   const getGradeColor = (grade) => {
     const colors = {
-      A: '#4CAF50',
-      B: '#FF9800',
-      C: '#F44336',
+      A: Colors.green50,
+      B: Colors.orange40,
+      C: Colors.red50,
     };
-    return colors[grade] || '#757575';
+    return colors[grade] || Colors.gray60;
   };
 
   const HarvestCard = ({ harvest }) => (
-    <TouchableOpacity style={styles.harvestCard}>
+    <TouchableOpacity style={styles.harvestCard} activeOpacity={0.8}>
       <View style={styles.harvestHeader}>
         <View style={styles.harvestTitleRow}>
-          <Ionicons name="basket" size={24} color="#2E7D32" />
+          <View style={styles.harvestIconContainer}>
+            <Ionicons name="basket" size={IconSize.md} color={Colors.green40} />
+          </View>
           <View style={styles.harvestTitleContent}>
             <Text style={styles.harvestCrop}>{harvest.cropType}</Text>
             <Text style={styles.harvestPlot}>{getPlotName(harvest.plotId)}</Text>
           </View>
-          <View style={[styles.gradeBadge, { backgroundColor: getGradeColor(harvest.grade) }]}>
-            <Text style={styles.gradeText}>Grade {harvest.grade}</Text>
+          <View style={[
+            styles.gradeBadge,
+            { borderColor: getGradeColor(harvest.grade) }
+          ]}>
+            <Text style={[
+              styles.gradeText,
+              { color: getGradeColor(harvest.grade) }
+            ]}>Grade {harvest.grade}</Text>
           </View>
         </View>
         <Text style={styles.harvestDate}>
@@ -80,68 +90,91 @@ export default function HarvestScreen({ navigation }) {
 
       <View style={styles.harvestMetrics}>
         <View style={styles.metricItem}>
-          <Ionicons name="scale-outline" size={16} color="#666" />
+          <Ionicons name="scale-outline" size={IconSize.sm} color={Colors.icon02} />
           <Text style={styles.metricText}>
             {harvest.quantity} {harvest.unit}
           </Text>
         </View>
         {harvest.laborHours && (
           <View style={styles.metricItem}>
-            <Ionicons name="time-outline" size={16} color="#666" />
+            <Ionicons name="time-outline" size={IconSize.sm} color={Colors.icon02} />
             <Text style={styles.metricText}>{harvest.laborHours}h</Text>
           </View>
         )}
         {harvest.laborCost && (
           <View style={styles.metricItem}>
-            <Ionicons name="cash-outline" size={16} color="#666" />
-            <Text style={styles.metricText}>₹{harvest.laborCost.toLocaleString()}</Text>
+            <Ionicons name="cash-outline" size={IconSize.sm} color={Colors.icon02} />
+            <Text style={styles.metricText}>₫{harvest.laborCost.toLocaleString()}</Text>
           </View>
         )}
       </View>
 
       {harvest.notes && (
         <View style={styles.notesContainer}>
-          <Ionicons name="document-text-outline" size={14} color="#999" />
+          <Ionicons name="document-text-outline" size={IconSize.sm} color={Colors.icon02} />
           <Text style={styles.notesText}>{harvest.notes}</Text>
         </View>
       )}
     </TouchableOpacity>
   );
 
+  const SummaryCard = ({ icon, value, label, color }) => (
+    <View style={styles.summaryCard}>
+      <Ionicons name={icon} size={IconSize.lg} color={color} />
+      <Text style={styles.summaryValue}>{value}</Text>
+      <Text style={styles.summaryLabel}>{label}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       {/* Summary Cards */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.summaryContainer}>
-        <View style={styles.summaryCard}>
-          <Ionicons name="basket" size={24} color="#4CAF50" />
-          <Text style={styles.summaryValue}>{metrics.totalQuantity} kg</Text>
-          <Text style={styles.summaryLabel}>Total Harvest</Text>
-        </View>
-        <View style={styles.summaryCard}>
-          <Ionicons name="trending-up" size={24} color="#2196F3" />
-          <Text style={styles.summaryValue}>₹{(metrics.totalValue / 1000).toFixed(1)}K</Text>
-          <Text style={styles.summaryLabel}>Total Value</Text>
-        </View>
-        <View style={styles.summaryCard}>
-          <Ionicons name="star" size={24} color="#4CAF50" />
-          <Text style={styles.summaryValue}>{metrics.gradeACounts}</Text>
-          <Text style={styles.summaryLabel}>Grade A</Text>
-        </View>
-        <View style={styles.summaryCard}>
-          <Ionicons name="star-half" size={24} color="#FF9800" />
-          <Text style={styles.summaryValue}>{metrics.gradeBCounts}</Text>
-          <Text style={styles.summaryLabel}>Grade B</Text>
-        </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.summaryContainer}
+        contentContainerStyle={styles.summaryContent}
+      >
+        <SummaryCard
+          icon="basket"
+          value={`${metrics.totalQuantity} kg`}
+          label="Total harvest"
+          color={Colors.green40}
+        />
+        <SummaryCard
+          icon="trending-up"
+          value={`₫${(metrics.totalValue / 1000).toFixed(1)}K`}
+          label="Total value"
+          color={Colors.blue50}
+        />
+        <SummaryCard
+          icon="star"
+          value={metrics.gradeACounts}
+          label="Grade A"
+          color={Colors.green50}
+        />
+        <SummaryCard
+          icon="star-half"
+          value={metrics.gradeBCounts}
+          label="Grade B"
+          color={Colors.orange40}
+        />
       </ScrollView>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+      <View style={[
+        styles.searchContainer,
+        searchFocused && styles.searchContainerFocused
+      ]}>
+        <Ionicons name="search" size={IconSize.md} color={Colors.icon02} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search harvests..."
+          placeholderTextColor={Colors.text03}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
         />
       </View>
 
@@ -160,6 +193,7 @@ export default function HarvestScreen({ navigation }) {
               filterGrade === grade && styles.filterChipActive,
             ]}
             onPress={() => setFilterGrade(grade)}
+            activeOpacity={0.8}
           >
             <Text
               style={[
@@ -174,7 +208,7 @@ export default function HarvestScreen({ navigation }) {
       </ScrollView>
 
       {/* Harvest List */}
-      <ScrollView style={styles.listContainer}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>
             {filteredHarvests.length} {filteredHarvests.length === 1 ? 'Record' : 'Records'}
@@ -187,7 +221,7 @@ export default function HarvestScreen({ navigation }) {
 
         {filteredHarvests.length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="basket-outline" size={64} color="#ccc" />
+            <Ionicons name="basket-outline" size={64} color={Colors.ui03} />
             <Text style={styles.emptyStateText}>No harvest records found</Text>
             <Text style={styles.emptyStateSubtext}>
               Try adjusting your filters or add a new harvest
@@ -195,15 +229,16 @@ export default function HarvestScreen({ navigation }) {
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: Spacing.spacing13 }} />
       </ScrollView>
 
       {/* Add Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('AddHarvest')}
+        activeOpacity={0.8}
       >
-        <Ionicons name="add" size={32} color="#fff" />
+        <Ionicons name="add" size={IconSize.xl} color={Colors.text04} />
       </TouchableOpacity>
     </View>
   );
@@ -212,204 +247,213 @@ export default function HarvestScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.ui02,
   },
   summaryContainer: {
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    backgroundColor: Colors.ui01,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: Colors.ui03,
+    paddingVertical: Spacing.spacing05,
+  },
+  summaryContent: {
+    paddingHorizontal: Spacing.spacing04,
   },
   summaryCard: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
+    backgroundColor: Colors.ui02,
+    borderRadius: BorderRadius.default,
+    padding: Spacing.spacing05,
+    marginHorizontal: Spacing.spacing02,
     minWidth: 120,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   summaryValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 8,
+    fontSize: Typography.fontSize.productiveHeading04,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginTop: Spacing.spacing03,
   },
   summaryLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginTop: Spacing.spacing02,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    margin: Spacing.spacing05,
+    paddingHorizontal: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.ui03,
+  },
+  searchContainerFocused: {
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.focus,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: Spacing.spacing03,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingVertical: Spacing.spacing04,
+    fontSize: Typography.fontSize.bodyShort02,
+    color: Colors.text01,
   },
   filterContainer: {
-    marginBottom: 16,
+    marginBottom: Spacing.spacing05,
   },
   filterContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.spacing05,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginRight: 8,
+    paddingHorizontal: Spacing.spacing05,
+    paddingVertical: Spacing.spacing03,
+    backgroundColor: Colors.ui01,
+    borderRadius: BorderRadius.sm,
+    marginRight: Spacing.spacing03,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.ui03,
   },
   filterChipActive: {
-    backgroundColor: '#2E7D32',
-    borderColor: '#2E7D32',
+    backgroundColor: Colors.interactive,
+    borderColor: Colors.interactive,
   },
   filterChipText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
   },
   filterChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: Colors.text04,
+    fontWeight: Typography.fontWeight.semibold,
   },
   listContainer: {
     flex: 1,
   },
   listHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: Spacing.spacing05,
+    paddingBottom: Spacing.spacing04,
   },
   listTitle: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.label01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   harvestCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing04,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   harvestHeader: {
-    marginBottom: 12,
+    marginBottom: Spacing.spacing04,
   },
   harvestTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.spacing03,
+  },
+  harvestIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.ui02,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.spacing04,
   },
   harvestTitleContent: {
     flex: 1,
-    marginLeft: 12,
   },
   harvestCrop: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
   },
   harvestPlot: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginTop: Spacing.spacing01,
   },
   gradeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: Spacing.spacing04,
+    paddingVertical: Spacing.spacing02,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
   },
   gradeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: Typography.fontSize.caption01,
+    fontWeight: Typography.fontWeight.semibold,
   },
   harvestDate: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text03,
   },
   harvestMetrics: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    marginBottom: Spacing.spacing03,
   },
   metricItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 4,
+    marginRight: Spacing.spacing05,
+    marginBottom: Spacing.spacing02,
   },
   metricText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing02,
   },
   notesContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#F5F5F5',
-    padding: 8,
-    borderRadius: 6,
-    marginTop: 8,
+    backgroundColor: Colors.ui02,
+    padding: Spacing.spacing03,
+    borderRadius: BorderRadius.sm,
+    marginTop: Spacing.spacing03,
   },
   notesText: {
     flex: 1,
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 6,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing03,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 64,
+    paddingVertical: Spacing.spacing10,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text03,
+    marginTop: Spacing.spacing05,
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: '#ccc',
-    marginTop: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text03,
+    marginTop: Spacing.spacing03,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.spacing07,
   },
   fab: {
     position: 'absolute',
-    right: 24,
-    bottom: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#2E7D32',
+    right: Spacing.spacing06,
+    bottom: Spacing.spacing06,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.interactive,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    ...Elevation.shadow03,
   },
 });

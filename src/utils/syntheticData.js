@@ -16,13 +16,13 @@ export const generateSyntheticData = () => {
     {
       id: '1',
       name: 'Green Valley Farm',
-      location: 'Karnataka, India',
+      location: 'Mekong Delta, Vietnam',
       totalArea: 25.5,
       unit: 'acres',
-      latitude: 12.9716,
-      longitude: 77.5946,
+      latitude: 10.0452,
+      longitude: 105.7469,
       established: '2018-03-15',
-      ownerName: 'Frank Luong',
+      ownerName: 'Luong Tuan Thanh',
       createdAt: getDateDaysAgo(365),
     },
   ];

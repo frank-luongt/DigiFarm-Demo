@@ -275,9 +275,9 @@ Edit `src/screens/Auth/LoginScreen.js`:
 
 ```javascript
 const demoUser = {
-  name: 'Your Name Here',  // Change this
-  phone: '+91 98765 43210',
-  language: 'English',
+  name: 'Luong Tuan Thanh',  // Change this
+  phone: '+84 90727 0184',
+  language: 'Vietnamese',
 };
 ```
 

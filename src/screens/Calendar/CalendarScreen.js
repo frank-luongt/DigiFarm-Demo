@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
+import { Colors, Typography, Spacing, BorderRadius, IconSize } from '../../theme/design-tokens';
 
 export default function CalendarScreen({ navigation }) {
   const { tasks, updateTask, plots } = useData();
@@ -68,11 +69,11 @@ export default function CalendarScreen({ navigation }) {
 
   const getPriorityColor = (priority) => {
     const colors = {
-      High: '#F44336',
-      Medium: '#FF9800',
-      Low: '#4CAF50',
+      High: Colors.red50,
+      Medium: Colors.orange40,
+      Low: Colors.green50,
     };
-    return colors[priority] || '#757575';
+    return colors[priority] || Colors.gray60;
   };
 
   const getTaskTypeIcon = (type) => {
@@ -136,8 +137,8 @@ export default function CalendarScreen({ navigation }) {
         >
           <Ionicons
             name={isCompleted ? 'checkmark-circle' : 'ellipse-outline'}
-            size={28}
-            color={isCompleted ? '#4CAF50' : '#999'}
+            size={IconSize.lg}
+            color={isCompleted ? Colors.green50 : Colors.icon02}
           />
         </TouchableOpacity>
         <View style={styles.taskContent}>
@@ -170,19 +171,19 @@ export default function CalendarScreen({ navigation }) {
             <View style={styles.metaItem}>
               <Ionicons
                 name={getTaskTypeIcon(task.type)}
-                size={14}
-                color="#666"
+                size={IconSize.sm}
+                color={Colors.icon02}
               />
               <Text style={styles.metaText}>{task.type}</Text>
             </View>
             <View style={styles.metaItem}>
-              <Ionicons name="location-outline" size={14} color="#666" />
+              <Ionicons name="location-outline" size={IconSize.sm} color={Colors.icon02} />
               <Text style={styles.metaText}>{getPlotName(task.plotId)}</Text>
             </View>
             <View
               style={[
                 styles.priorityBadge,
-                { backgroundColor: getPriorityColor(task.priority) + '20' },
+                { borderColor: getPriorityColor(task.priority) },
               ]}
             >
               <Text
@@ -238,7 +239,10 @@ export default function CalendarScreen({ navigation }) {
               isSelected && styles.taskDotSelected,
             ]}
           >
-            <Text style={styles.taskCount}>{tasksCount}</Text>
+            <Text style={[
+              styles.taskCount,
+              isSelected && styles.taskCountSelected,
+            ]}>{tasksCount}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -289,13 +293,13 @@ export default function CalendarScreen({ navigation }) {
       </ScrollView>
 
       {/* Task List */}
-      <ScrollView style={styles.listContainer}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         {Object.keys(groupedTasks)
           .sort()
           .map(date => (
             <View key={date} style={styles.dateSection}>
               <View style={styles.dateSectionHeader}>
-                <Ionicons name="calendar-outline" size={20} color="#2E7D32" />
+                <Ionicons name="calendar-outline" size={IconSize.md} color={Colors.green40} />
                 <Text style={styles.dateSectionTitle}>{formatDateFull(date)}</Text>
                 <Text style={styles.dateSectionCount}>
                   {groupedTasks[date].length} {groupedTasks[date].length === 1 ? 'task' : 'tasks'}
@@ -309,7 +313,7 @@ export default function CalendarScreen({ navigation }) {
 
         {Object.keys(groupedTasks).length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="calendar-outline" size={64} color="#ccc" />
+            <Ionicons name="calendar-outline" size={64} color={Colors.ui03} />
             <Text style={styles.emptyStateText}>No tasks found</Text>
             <Text style={styles.emptyStateSubtext}>
               {filterStatus === 'All'
@@ -319,7 +323,7 @@ export default function CalendarScreen({ navigation }) {
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: Spacing.spacing10 }} />
       </ScrollView>
     </View>
   );
@@ -328,130 +332,130 @@ export default function CalendarScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.ui02,
   },
   calendarContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.ui01,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    paddingVertical: 16,
+    borderBottomColor: Colors.ui03,
+    paddingVertical: Spacing.spacing05,
   },
   calendarScroll: {
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.spacing04,
   },
   calendarDate: {
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    borderRadius: 12,
+    paddingVertical: Spacing.spacing04,
+    paddingHorizontal: Spacing.spacing05,
+    marginHorizontal: Spacing.spacing02,
+    borderRadius: BorderRadius.default,
     minWidth: 70,
   },
   calendarDateSelected: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: Colors.interactive,
   },
   calendarDateToday: {
-    borderWidth: 2,
-    borderColor: '#2E7D32',
+    borderWidth: 1,
+    borderColor: Colors.interactive,
   },
   calendarDay: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginBottom: Spacing.spacing02,
   },
   calendarDaySelected: {
-    color: '#fff',
+    color: Colors.text04,
   },
   calendarNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
   },
   calendarNumberSelected: {
-    color: '#fff',
+    color: Colors.text04,
   },
   taskDot: {
-    marginTop: 4,
+    marginTop: Spacing.spacing02,
     minWidth: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#2E7D32',
+    backgroundColor: Colors.green40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   taskDotSelected: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.text04,
   },
   taskCount: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: Typography.fontSize.caption01,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text04,
+  },
+  taskCountSelected: {
+    color: Colors.interactive,
   },
   filterContainer: {
-    marginVertical: 16,
+    marginVertical: Spacing.spacing05,
   },
   filterContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.spacing05,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginRight: 8,
+    paddingHorizontal: Spacing.spacing05,
+    paddingVertical: Spacing.spacing03,
+    backgroundColor: Colors.ui01,
+    borderRadius: BorderRadius.sm,
+    marginRight: Spacing.spacing03,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.ui03,
   },
   filterChipActive: {
-    backgroundColor: '#2E7D32',
-    borderColor: '#2E7D32',
+    backgroundColor: Colors.interactive,
+    borderColor: Colors.interactive,
   },
   filterChipText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
   },
   filterChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: Colors.text04,
+    fontWeight: Typography.fontWeight.semibold,
   },
   listContainer: {
     flex: 1,
   },
   dateSection: {
-    marginBottom: 24,
+    marginBottom: Spacing.spacing06,
   },
   dateSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
+    paddingHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing04,
   },
   dateSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 8,
+    fontSize: Typography.fontSize.productiveHeading02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginLeft: Spacing.spacing03,
     flex: 1,
   },
   dateSectionCount: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
   },
   taskCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing04,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   checkboxContainer: {
-    marginRight: 12,
+    marginRight: Spacing.spacing04,
   },
   taskContent: {
     flex: 1,
@@ -459,36 +463,38 @@ const styles = StyleSheet.create({
   taskHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.spacing02,
   },
   taskTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
     flex: 1,
   },
   taskTitleCompleted: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: Colors.text03,
   },
   overdueBadge: {
-    backgroundColor: '#FFEBEE',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Colors.ui02,
+    paddingHorizontal: Spacing.spacing03,
+    paddingVertical: Spacing.spacing02,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.red50,
   },
   overdueText: {
-    fontSize: 10,
-    color: '#F44336',
-    fontWeight: '600',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.red50,
+    fontWeight: Typography.fontWeight.semibold,
   },
   taskDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    marginBottom: Spacing.spacing03,
   },
   taskDescriptionCompleted: {
-    color: '#999',
+    color: Colors.text03,
   },
   taskMeta: {
     flexDirection: 'row',
@@ -498,39 +504,40 @@ const styles = StyleSheet.create({
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 4,
+    marginRight: Spacing.spacing05,
+    marginBottom: Spacing.spacing02,
   },
   metaText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing02,
   },
   priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: Spacing.spacing03,
+    paddingVertical: Spacing.spacing02,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
   },
   priorityText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: Typography.fontSize.caption01,
+    fontWeight: Typography.fontWeight.semibold,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 64,
+    paddingVertical: Spacing.spacing10,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text03,
+    marginTop: Spacing.spacing05,
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: '#ccc',
-    marginTop: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text03,
+    marginTop: Spacing.spacing03,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.spacing07,
   },
 });

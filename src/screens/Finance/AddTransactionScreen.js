@@ -120,10 +120,10 @@ export default function AddTransactionScreen({ navigation }) {
 
         {/* Amount */}
         <Text style={styles.label}>
-          Amount (₹) <Text style={styles.required}>*</Text>
+          Amount (₫) <Text style={styles.required}>*</Text>
         </Text>
         <View style={styles.amountContainer}>
-          <Text style={styles.currencySymbol}>₹</Text>
+          <Text style={styles.currencySymbol}>₫</Text>
           <TextInput
             style={styles.amountInput}
             placeholder="0.00"

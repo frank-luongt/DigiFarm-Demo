@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
+import { Colors, Typography, Spacing, BorderRadius, IconSize, Elevation } from '../../theme/design-tokens';
 
 export default function FinanceScreen({ navigation }) {
   const { transactions } = useData();
@@ -77,33 +78,36 @@ export default function FinanceScreen({ navigation }) {
 
   const getCategoryColor = (category, type) => {
     if (type === 'Income') {
-      return '#4CAF50';
+      return Colors.green50;
     }
     const colors = {
-      Seeds: '#8BC34A',
-      Fertilizer: '#FF9800',
-      Pesticides: '#F44336',
-      Labor: '#2196F3',
-      Equipment: '#9C27B0',
-      Maintenance: '#FF5722',
-      Transportation: '#00BCD4',
+      Seeds: Colors.green40,
+      Fertilizer: Colors.orange40,
+      Pesticides: Colors.red50,
+      Labor: Colors.blue50,
+      Equipment: Colors.purple40,
+      Maintenance: Colors.red50,
+      Transportation: Colors.teal40,
     };
-    return colors[category] || '#757575';
+    return colors[category] || Colors.gray60;
   };
 
-
   const TransactionCard = ({ transaction }) => (
-    <TouchableOpacity style={styles.transactionCard}>
+    <TouchableOpacity style={styles.transactionCard} activeOpacity={0.8}>
+      <View style={[
+        styles.transactionBorder,
+        { backgroundColor: transaction.type === 'Income' ? Colors.green50 : Colors.red50 }
+      ]} />
       <View
         style={[
           styles.transactionIcon,
-          { backgroundColor: getCategoryColor(transaction.category, transaction.type) },
+          { backgroundColor: Colors.ui02 },
         ]}
       >
         <Ionicons
           name={getCategoryIcon(transaction.category)}
-          size={24}
-          color="#fff"
+          size={IconSize.md}
+          color={getCategoryColor(transaction.category, transaction.type)}
         />
       </View>
       <View style={styles.transactionContent}>
@@ -112,10 +116,10 @@ export default function FinanceScreen({ navigation }) {
           <Text
             style={[
               styles.transactionAmount,
-              { color: transaction.type === 'Income' ? '#4CAF50' : '#F44336' },
+              { color: transaction.type === 'Income' ? Colors.green50 : Colors.red50 },
             ]}
           >
-            {transaction.type === 'Income' ? '+' : '-'}₹{transaction.amount.toLocaleString()}
+            {transaction.type === 'Income' ? '+' : '-'}₫{transaction.amount.toLocaleString()}
           </Text>
         </View>
         {transaction.description && (
@@ -123,14 +127,14 @@ export default function FinanceScreen({ navigation }) {
         )}
         <View style={styles.transactionMeta}>
           <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={12} color="#666" />
+            <Ionicons name="calendar-outline" size={IconSize.sm} color={Colors.icon02} />
             <Text style={styles.metaText}>
               {new Date(transaction.date).toLocaleDateString()}
             </Text>
           </View>
           {transaction.paymentMethod && (
             <View style={styles.metaItem}>
-              <Ionicons name="card-outline" size={12} color="#666" />
+              <Ionicons name="card-outline" size={IconSize.sm} color={Colors.icon02} />
               <Text style={styles.metaText}>{transaction.paymentMethod}</Text>
             </View>
           )}
@@ -149,30 +153,37 @@ export default function FinanceScreen({ navigation }) {
       {/* Summary Cards */}
       <View style={styles.summaryContainer}>
         <View style={styles.summaryRow}>
-          <View style={[styles.summaryCard, { borderLeftColor: '#4CAF50' }]}>
-            <Ionicons name="trending-up" size={24} color="#4CAF50" />
-            <Text style={styles.summaryValue}>₹{(metrics.totalIncome / 1000).toFixed(1)}K</Text>
-            <Text style={styles.summaryLabel}>Total Income</Text>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryIconContainer}>
+              <Ionicons name="trending-up" size={IconSize.lg} color={Colors.green50} />
+            </View>
+            <Text style={styles.summaryValue}>₫{(metrics.totalIncome / 1000).toFixed(1)}K</Text>
+            <Text style={styles.summaryLabel}>Total income</Text>
           </View>
-          <View style={[styles.summaryCard, { borderLeftColor: '#F44336' }]}>
-            <Ionicons name="trending-down" size={24} color="#F44336" />
-            <Text style={styles.summaryValue}>₹{(metrics.totalExpenses / 1000).toFixed(1)}K</Text>
-            <Text style={styles.summaryLabel}>Total Expenses</Text>
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryIconContainer}>
+              <Ionicons name="trending-down" size={IconSize.lg} color={Colors.red50} />
+            </View>
+            <Text style={styles.summaryValue}>₫{(metrics.totalExpenses / 1000).toFixed(1)}K</Text>
+            <Text style={styles.summaryLabel}>Total expenses</Text>
           </View>
         </View>
-        <View style={[styles.profitCard, { backgroundColor: metrics.profit >= 0 ? '#E8F5E9' : '#FFEBEE' }]}>
+        <View style={[
+          styles.profitCard,
+          { backgroundColor: metrics.profit >= 0 ? Colors.green10 : Colors.ui02 }
+        ]}>
           <View style={styles.profitHeader}>
-            <Text style={styles.profitLabel}>Net Profit</Text>
+            <Text style={styles.profitLabel}>Net profit</Text>
             <View style={styles.profitBadge}>
               <Ionicons
                 name={metrics.profit >= 0 ? 'arrow-up' : 'arrow-down'}
-                size={16}
-                color={metrics.profit >= 0 ? '#4CAF50' : '#F44336'}
+                size={IconSize.sm}
+                color={metrics.profit >= 0 ? Colors.green50 : Colors.red50}
               />
               <Text
                 style={[
                   styles.profitMargin,
-                  { color: metrics.profit >= 0 ? '#4CAF50' : '#F44336' },
+                  { color: metrics.profit >= 0 ? Colors.green50 : Colors.red50 },
                 ]}
               >
                 {metrics.profitMargin.toFixed(1)}%
@@ -182,10 +193,10 @@ export default function FinanceScreen({ navigation }) {
           <Text
             style={[
               styles.profitValue,
-              { color: metrics.profit >= 0 ? '#2E7D32' : '#C62828' },
+              { color: metrics.profit >= 0 ? Colors.green60 : Colors.red60 },
             ]}
           >
-            ₹{metrics.profit.toLocaleString()}
+            ₫{metrics.profit.toLocaleString()}
           </Text>
         </View>
       </View>
@@ -193,15 +204,18 @@ export default function FinanceScreen({ navigation }) {
       {/* Expense Breakdown */}
       {metrics.totalExpenses > 0 && (
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Expense Breakdown</Text>
+          <Text style={styles.chartTitle}>Expense breakdown</Text>
           <View style={styles.categoryList}>
             {Object.entries(metrics.expensesByCategory).map(([category, amount]) => (
               <View key={category} style={styles.categoryItem}>
                 <View style={styles.categoryLeft}>
-                  <View style={[styles.categoryDot, { backgroundColor: getCategoryColor(category, 'Expense') }]} />
+                  <View style={[
+                    styles.categoryDot,
+                    { backgroundColor: getCategoryColor(category, 'Expense') }
+                  ]} />
                   <Text style={styles.categoryName}>{category}</Text>
                 </View>
-                <Text style={styles.categoryAmount}>₹{amount.toLocaleString()}</Text>
+                <Text style={styles.categoryAmount}>₫{amount.toLocaleString()}</Text>
               </View>
             ))}
           </View>
@@ -215,6 +229,7 @@ export default function FinanceScreen({ navigation }) {
             key={tab}
             style={[styles.tab, activeTab === tab && styles.tabActive]}
             onPress={() => setActiveTab(tab)}
+            activeOpacity={0.8}
           >
             <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
               {tab}
@@ -224,7 +239,7 @@ export default function FinanceScreen({ navigation }) {
       </View>
 
       {/* Transaction List */}
-      <ScrollView style={styles.listContainer}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>
             {filteredTransactions.length} {filteredTransactions.length === 1 ? 'Transaction' : 'Transactions'}
@@ -237,7 +252,7 @@ export default function FinanceScreen({ navigation }) {
 
         {filteredTransactions.length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="wallet-outline" size={64} color="#ccc" />
+            <Ionicons name="wallet-outline" size={64} color={Colors.ui03} />
             <Text style={styles.emptyStateText}>No transactions found</Text>
             <Text style={styles.emptyStateSubtext}>
               Add your first transaction to start tracking finances
@@ -245,15 +260,16 @@ export default function FinanceScreen({ navigation }) {
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: Spacing.spacing13 }} />
       </ScrollView>
 
       {/* Add Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('AddTransaction')}
+        activeOpacity={0.8}
       >
-        <Ionicons name="add" size={32} color="#fff" />
+        <Ionicons name="add" size={IconSize.xl} color={Colors.text04} />
       </TouchableOpacity>
     </View>
   );
@@ -262,147 +278,160 @@ export default function FinanceScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.ui02,
   },
   summaryContainer: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: Colors.ui01,
+    padding: Spacing.spacing05,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: Colors.ui03,
   },
   summaryRow: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: Spacing.spacing05,
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
-    borderLeftWidth: 4,
+    backgroundColor: Colors.ui02,
+    borderRadius: BorderRadius.default,
+    padding: Spacing.spacing05,
+    marginHorizontal: Spacing.spacing02,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
+    alignItems: 'center',
+  },
+  summaryIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.ui01,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.spacing03,
   },
   summaryValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 8,
+    fontSize: Typography.fontSize.productiveHeading04,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginTop: Spacing.spacing02,
   },
   summaryLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginTop: Spacing.spacing02,
   },
   profitCard: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: BorderRadius.default,
+    padding: Spacing.spacing05,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   profitHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.spacing03,
   },
   profitLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   profitBadge: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   profitMargin: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 4,
+    fontSize: Typography.fontSize.bodyShort01,
+    fontWeight: Typography.fontWeight.semibold,
+    marginLeft: Spacing.spacing02,
   },
   profitValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: Typography.fontSize.productiveHeading05,
+    fontWeight: Typography.fontWeight.semibold,
   },
   chartCard: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    alignItems: 'center',
+    backgroundColor: Colors.ui01,
+    margin: Spacing.spacing05,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   chartTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-    alignSelf: 'flex-start',
+    fontSize: Typography.fontSize.productiveHeading02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing05,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 4,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    padding: Spacing.spacing02,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: Spacing.spacing03,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: BorderRadius.sm,
   },
   tabActive: {
-    backgroundColor: '#2E7D32',
+    backgroundColor: Colors.interactive,
   },
   tabText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   tabTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: Colors.text04,
+    fontWeight: Typography.fontWeight.semibold,
   },
   listContainer: {
     flex: 1,
-    marginTop: 16,
+    marginTop: Spacing.spacing05,
   },
   listHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: Spacing.spacing05,
+    paddingBottom: Spacing.spacing04,
   },
   listTitle: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.label01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   transactionCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing04,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
+    position: 'relative',
+  },
+  transactionBorder: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: BorderRadius.default,
+    borderBottomLeftRadius: BorderRadius.default,
   },
   transactionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: Spacing.spacing05,
+    marginLeft: Spacing.spacing03,
   },
   transactionContent: {
     flex: 1,
@@ -411,21 +440,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.spacing02,
   },
   transactionCategory: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
   },
   transactionAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   transactionDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    marginBottom: Spacing.spacing03,
   },
   transactionMeta: {
     flexDirection: 'row',
@@ -435,58 +464,56 @@ const styles = StyleSheet.create({
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 4,
+    marginRight: Spacing.spacing05,
+    marginBottom: Spacing.spacing02,
   },
   metaText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing02,
   },
   statusBadge: {
-    backgroundColor: '#E8F5E9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: Colors.green10,
+    paddingHorizontal: Spacing.spacing03,
+    paddingVertical: Spacing.spacing02,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.green40,
   },
   statusText: {
-    fontSize: 10,
-    color: '#4CAF50',
-    fontWeight: '600',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.green50,
+    fontWeight: Typography.fontWeight.semibold,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 64,
+    paddingVertical: Spacing.spacing10,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text03,
+    marginTop: Spacing.spacing05,
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: '#ccc',
-    marginTop: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text03,
+    marginTop: Spacing.spacing03,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.spacing07,
   },
   fab: {
     position: 'absolute',
-    right: 24,
-    bottom: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#2E7D32',
+    right: Spacing.spacing06,
+    bottom: Spacing.spacing06,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.interactive,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    ...Elevation.shadow03,
   },
   categoryList: {
     width: '100%',
@@ -495,9 +522,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.spacing04,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: Colors.ui03,
   },
   categoryLeft: {
     flexDirection: 'row',
@@ -507,16 +534,16 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: 12,
+    marginRight: Spacing.spacing04,
   },
   categoryName: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text01,
+    fontWeight: Typography.fontWeight.semibold,
   },
   categoryAmount: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '600',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
 });

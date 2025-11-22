@@ -7,7 +7,7 @@
 #### Login Screen
 - ✅ Phone number-based authentication
 - ✅ OTP verification (demo mode)
-- ✅ Country code selection (+91 India)
+- ✅ Country code selection (+84 Vietnam)
 - ✅ Quick Demo Access button
 - ✅ Terms & Privacy Policy acknowledgment
 

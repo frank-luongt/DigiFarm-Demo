@@ -58,7 +58,7 @@ By the end of the demo, the audience should understand:
 **"This is the home dashboard - your farm at a glance."**
 
 #### Key Points to Highlight:
-- **"Welcome back, Rajesh Kumar - our demo farmer"**
+- **"Welcome back, Luong Tuan Thanh - our demo farmer"**
 - **"See the key metrics: ₹198K income, ₹114K profit with 57% margin"**
 - **"1,840 kg harvested across all crops"**
 - **"3 active plots currently in production"**
@@ -286,7 +286,7 @@ By the end of the demo, the audience should understand:
 ### Do's ✅
 - **Speak confidently** - You know the product
 - **Go slow** - Let audience absorb each screen
-- **Tell stories** - "Imagine you're Rajesh Kumar..."
+- **Tell stories** - "Imagine you're Luong Tuan Thanh..."
 - **Show benefits** - Connect features to value
 - **Encourage interaction** - "What would you like to see?"
 - **Use real scenarios** - "At harvest time..."

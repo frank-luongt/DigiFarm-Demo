@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
+import { Colors, Typography, Spacing, BorderRadius, Elevation, IconSize } from '../../theme/design-tokens';
 
 export default function DashboardScreen({ navigation }) {
   const { user, farms, plots, activities, harvests, transactions, tasks } = useData();
@@ -23,11 +24,8 @@ export default function DashboardScreen({ navigation }) {
       .reduce((sum, t) => sum + t.amount, 0);
 
     const profit = totalIncome - totalExpenses;
-
     const totalHarvest = harvests.reduce((sum, h) => sum + h.quantity, 0);
-
     const activePlots = plots.filter(p => p.status === 'Active').length;
-
     const pendingTasks = tasks.filter(t => t.status === 'Pending').length;
 
     // Recent activities (last 7 days)
@@ -37,36 +35,6 @@ export default function DashboardScreen({ navigation }) {
       a => new Date(a.date) >= sevenDaysAgo
     ).length;
 
-    // Harvest trend (last 30 days)
-    const last30Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i) * 5);
-      return date.toISOString().split('T')[0];
-    });
-
-    const harvestData = last30Days.map(date => {
-      return harvests
-        .filter(h => h.date.split('T')[0] <= date)
-        .reduce((sum, h) => sum + h.quantity, 0);
-    });
-
-    // Income vs Expense last 6 months
-    const monthlyData = Array.from({ length: 6 }, (_, i) => {
-      const date = new Date();
-      date.setMonth(date.getMonth() - (5 - i));
-      const month = date.toISOString().substring(0, 7);
-
-      const income = transactions
-        .filter(t => t.type === 'Income' && t.date.substring(0, 7) === month)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const expense = transactions
-        .filter(t => t.type === 'Expense' && t.date.substring(0, 7) === month)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      return { month: date.toLocaleDateString('en', { month: 'short' }), income, expense };
-    });
-
     return {
       totalIncome,
       totalExpenses,
@@ -75,435 +43,426 @@ export default function DashboardScreen({ navigation }) {
       activePlots,
       pendingTasks,
       recentActivities,
-      harvestData,
-      monthlyData,
     };
   }, [transactions, harvests, plots, tasks, activities]);
 
-  const StatCard = ({ title, value, subtitle, icon, color, onPress }) => (
-    <TouchableOpacity
-      style={[styles.statCard, { borderLeftColor: color }]}
-      onPress={onPress}
-    >
-      <View style={styles.statHeader}>
-        <Ionicons name={icon} size={24} color={color} />
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
-      {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
-    </TouchableOpacity>
-  );
-
   const formatCurrency = (amount) => {
-    return `₹${(amount / 1000).toFixed(1)}K`;
+    return `₫${(amount / 1000).toFixed(1)}K`;
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getActivityIcon = (type) => {
+    const icons = {
+      Planting: 'leaf',
+      Irrigation: 'water',
+      Fertilization: 'flask',
+      'Pest Control': 'bug',
+      Weeding: 'cut',
+      Maintenance: 'construct',
+      Monitoring: 'analytics',
+    };
+    return icons[type] || 'ellipse';
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Welcome back,</Text>
-          <Text style={styles.userName}>{user?.name || 'Farmer'}</Text>
+          <Text style={styles.headerTitle}>Dashboard</Text>
+          <Text style={styles.headerSubtitle}>Welcome back, {user?.name || 'Farmer'}</Text>
         </View>
         <TouchableOpacity style={styles.notificationButton}>
-          <Ionicons name="notifications-outline" size={24} color="#333" />
-          {metrics.pendingTasks > 0 && <View style={styles.notificationBadge} />}
+          <Ionicons name="notifications-outline" size={IconSize.lg} color={Colors.icon01} />
+          {metrics.pendingTasks > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationCount}>{metrics.pendingTasks}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Quick Stats */}
-      <View style={styles.statsGrid}>
-        <StatCard
-          title="Total Income"
-          value={formatCurrency(metrics.totalIncome)}
-          subtitle="This season"
-          icon="trending-up"
-          color="#4CAF50"
-          onPress={() => navigation.navigate('Finance')}
-        />
-        <StatCard
-          title="Net Profit"
-          value={formatCurrency(metrics.profit)}
-          subtitle={`${((metrics.profit / metrics.totalIncome) * 100).toFixed(0)}% margin`}
-          icon="cash"
-          color="#2196F3"
-          onPress={() => navigation.navigate('Finance')}
-        />
-        <StatCard
-          title="Total Harvest"
-          value={`${metrics.totalHarvest} kg`}
-          subtitle="All crops"
-          icon="basket"
-          color="#FF9800"
-          onPress={() => navigation.navigate('Harvest')}
-        />
-        <StatCard
-          title="Active Plots"
-          value={metrics.activePlots}
-          subtitle={`${plots.length} total plots`}
-          icon="leaf"
-          color="#8BC34A"
-          onPress={() => navigation.navigate('Profile', { screen: 'FarmManagement' })}
-        />
-      </View>
-
-      {/* Pending Tasks Alert */}
-      {metrics.pendingTasks > 0 && (
-        <TouchableOpacity
-          style={styles.taskAlert}
-          onPress={() => navigation.navigate('Calendar')}
-        >
-          <Ionicons name="alert-circle" size={24} color="#FF9800" />
-          <View style={styles.taskAlertText}>
-            <Text style={styles.taskAlertTitle}>
-              {metrics.pendingTasks} Pending Tasks
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Key Metrics Grid */}
+        <View style={styles.metricsGrid}>
+          {/* Profit Card */}
+          <TouchableOpacity
+            style={[styles.metricCard, styles.metricCardLarge]}
+            onPress={() => navigation.navigate('Finance')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>Net profit</Text>
+              <Ionicons name="trending-up" size={IconSize.md} color={Colors.green40} />
+            </View>
+            <Text style={[styles.metricValue, { color: metrics.profit >= 0 ? Colors.green50 : Colors.red50 }]}>
+              {formatCurrency(metrics.profit)}
             </Text>
-            <Text style={styles.taskAlertSubtitle}>Tap to view your schedule</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
-        </TouchableOpacity>
-      )}
+            <View style={styles.metricSubRow}>
+              <Text style={styles.metricSub}>
+                <Text style={{ color: Colors.green50 }}>↑ {formatCurrency(metrics.totalIncome)}</Text>
+                {' '}income
+              </Text>
+              <Text style={styles.metricSub}>
+                <Text style={{ color: Colors.red50 }}>↓ {formatCurrency(metrics.totalExpenses)}</Text>
+                {' '}expenses
+              </Text>
+            </View>
+          </TouchableOpacity>
 
-      {/* Financial Summary */}
-      <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>📊 Financial Overview</Text>
-        <View style={{padding: 20, backgroundColor: '#F5F5F5', borderRadius: 8, alignItems: 'center'}}>
-          <Ionicons name="bar-chart" size={48} color="#2E7D32" />
-          <Text style={{fontSize: 14, color: '#666', marginTop: 12, textAlign: 'center'}}>
-            Interactive charts available on mobile app
-          </Text>
-          <Text style={{fontSize: 12, color: '#999', marginTop: 8, textAlign: 'center'}}>
-            Install the app on your phone to view harvest trends and financial charts
-          </Text>
-        </View>
-        <View style={{marginTop: 16, flexDirection: 'row', justifyContent: 'space-around'}}>
-          <View style={{alignItems: 'center'}}>
-            <Text style={{fontSize: 12, color: '#666'}}>Income</Text>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: '#4CAF50'}}>{formatCurrency(metrics.totalIncome)}</Text>
-          </View>
-          <View style={{alignItems: 'center'}}>
-            <Text style={{fontSize: 12, color: '#666'}}>Expenses</Text>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: '#F44336'}}>{formatCurrency(metrics.totalExpenses)}</Text>
-          </View>
-          <View style={{alignItems: 'center'}}>
-            <Text style={{fontSize: 12, color: '#666'}}>Profit</Text>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: '#2196F3'}}>{formatCurrency(metrics.profit)}</Text>
-          </View>
-        </View>
-      </View>
+          {/* Harvest Card */}
+          <TouchableOpacity
+            style={styles.metricCard}
+            onPress={() => navigation.navigate('Harvest')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>Total harvest</Text>
+              <Ionicons name="basket-outline" size={IconSize.md} color={Colors.yellow30} />
+            </View>
+            <Text style={styles.metricValue}>{metrics.totalHarvest} kg</Text>
+            <Text style={styles.metricSub}>All crops combined</Text>
+          </TouchableOpacity>
 
-      {/* Recent Activities */}
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Activities')}>
-            <Text style={styles.seeAllText}>See All</Text>
+          {/* Active Plots Card */}
+          <TouchableOpacity
+            style={styles.metricCard}
+            onPress={() => navigation.navigate('Profile')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>Active plots</Text>
+              <Ionicons name="leaf-outline" size={IconSize.md} color={Colors.green40} />
+            </View>
+            <Text style={styles.metricValue}>{metrics.activePlots}</Text>
+            <Text style={styles.metricSub}>{plots.length} total plots</Text>
+          </TouchableOpacity>
+
+          {/* Recent Activities Card */}
+          <TouchableOpacity
+            style={styles.metricCard}
+            onPress={() => navigation.navigate('Activities')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.metricHeader}>
+              <Text style={styles.metricLabel}>Activities</Text>
+              <Ionicons name="clipboard-outline" size={IconSize.md} color={Colors.blue40} />
+            </View>
+            <Text style={styles.metricValue}>{metrics.recentActivities}</Text>
+            <Text style={styles.metricSub}>Last 7 days</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.activitySummary}>
-          {metrics.recentActivities} activities in the last 7 days
-        </Text>
-        {activities.slice(0, 3).map((activity, index) => (
-          <View key={activity.id} style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: getActivityColor(activity.type) }]}>
-              <Ionicons name={getActivityIcon(activity.type)} size={20} color="#fff" />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>{activity.type}</Text>
-              <Text style={styles.activityDescription}>{activity.description}</Text>
-              <Text style={styles.activityDate}>
-                {new Date(activity.date).toLocaleDateString()}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
 
-      {/* Farm Overview */}
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>My Plots</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile', { screen: 'FarmManagement' })}>
-            <Text style={styles.seeAllText}>Manage</Text>
+        {/* Pending Tasks Alert */}
+        {metrics.pendingTasks > 0 && (
+          <TouchableOpacity
+            style={styles.alertCard}
+            onPress={() => navigation.navigate('Calendar')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.alertIconContainer}>
+              <Ionicons name="time" size={IconSize.md} color={Colors.orange40} />
+            </View>
+            <View style={styles.alertContent}>
+              <Text style={styles.alertTitle}>{metrics.pendingTasks} pending tasks</Text>
+              <Text style={styles.alertDescription}>Review your scheduled farm activities</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={IconSize.md} color={Colors.icon02} />
           </TouchableOpacity>
-        </View>
-        {plots.slice(0, 3).map(plot => (
-          <View key={plot.id} style={styles.plotItem}>
-            <View style={styles.plotIcon}>
-              <Text style={styles.plotEmoji}>🌾</Text>
-            </View>
-            <View style={styles.plotContent}>
-              <Text style={styles.plotName}>{plot.name}</Text>
-              <Text style={styles.plotDetails}>
-                {plot.cropType} • {plot.area} {plot.unit}
-              </Text>
-            </View>
-            <View style={[styles.plotStatus, { backgroundColor: '#E8F5E9' }]}>
-              <Text style={[styles.plotStatusText, { color: '#4CAF50' }]}>
-                {plot.status}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
+        )}
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
+        {/* Recent Activities Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent activities</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Activities')}>
+              <Text style={styles.sectionLink}>View all</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.list}>
+            {activities.slice(0, 5).map((activity, index) => (
+              <View
+                key={activity.id}
+                style={[
+                  styles.listItem,
+                  index !== activities.slice(0, 5).length - 1 && styles.listItemBorder
+                ]}
+              >
+                <View style={styles.listItemIcon}>
+                  <Ionicons name={getActivityIcon(activity.type)} size={IconSize.md} color={Colors.green40} />
+                </View>
+                <View style={styles.listItemContent}>
+                  <Text style={styles.listItemTitle}>{activity.type}</Text>
+                  <Text style={styles.listItemDescription}>{activity.description}</Text>
+                </View>
+                <Text style={styles.listItemDate}>{formatDate(activity.date)}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Plots Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Your plots</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+              <Text style={styles.sectionLink}>Manage</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.list}>
+            {plots.slice(0, 3).map((plot, index) => (
+              <View
+                key={plot.id}
+                style={[
+                  styles.listItem,
+                  index !== plots.slice(0, 3).length - 1 && styles.listItemBorder
+                ]}
+              >
+                <View style={styles.plotIconContainer}>
+                  <Text style={styles.plotIcon}>🌾</Text>
+                </View>
+                <View style={styles.listItemContent}>
+                  <Text style={styles.listItemTitle}>{plot.name}</Text>
+                  <Text style={styles.listItemDescription}>
+                    {plot.cropType} • {plot.area} {plot.unit}
+                  </Text>
+                </View>
+                <View style={[styles.tag, styles.tagGreen]}>
+                  <Text style={styles.tagText}>{plot.status}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: Spacing.spacing10 }} />
+      </ScrollView>
+    </View>
   );
 }
-
-const getActivityIcon = (type) => {
-  const icons = {
-    Planting: 'leaf',
-    Irrigation: 'water',
-    Fertilization: 'flask',
-    'Pest Control': 'bug',
-    Weeding: 'cut',
-    Maintenance: 'construct',
-    Monitoring: 'eye',
-  };
-  return icons[type] || 'ellipse';
-};
-
-const getActivityColor = (type) => {
-  const colors = {
-    Planting: '#4CAF50',
-    Irrigation: '#2196F3',
-    Fertilization: '#FF9800',
-    'Pest Control': '#F44336',
-    Weeding: '#8BC34A',
-    Maintenance: '#9C27B0',
-    Monitoring: '#00BCD4',
-  };
-  return colors[type] || '#757575';
-};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.ui02,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.spacing05,
+    paddingTop: Spacing.spacing10,
+    paddingBottom: Spacing.spacing06,
+    backgroundColor: Colors.ui01,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.ui03,
   },
-  greeting: {
-    fontSize: 14,
-    color: '#666',
+  headerTitle: {
+    fontSize: Typography.fontSize.productiveHeading04,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing02,
   },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2E7D32',
+  headerSubtitle: {
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
   },
   notificationButton: {
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#F44336',
+    top: -4,
+    right: -4,
+    backgroundColor: Colors.red50,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  statsGrid: {
+  notificationCount: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text04,
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  content: {
+    flex: 1,
+  },
+  metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 12,
+    padding: Spacing.spacing05,
   },
-  statCard: {
+  metricCard: {
+    backgroundColor: Colors.ui01,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    margin: '1%',
-    borderLeftWidth: 4,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    marginBottom: Spacing.spacing05,
+    marginRight: '2%',
   },
-  statHeader: {
-    marginBottom: 8,
+  metricCardLarge: {
+    width: '100%',
+    marginRight: 0,
   },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+  metricHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.spacing04,
   },
-  statTitle: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+  metricLabel: {
+    fontSize: Typography.fontSize.label01,
+    color: Colors.text02,
   },
-  statSubtitle: {
-    fontSize: 11,
-    color: '#999',
+  metricValue: {
+    fontSize: Typography.fontSize.productiveHeading05,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing03,
   },
-  taskAlert: {
+  metricSub: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginRight: Spacing.spacing05,
+  },
+  metricSubRow: {
+    flexDirection: 'row',
+  },
+  alertCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0',
-    margin: 24,
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing05,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
     borderLeftWidth: 4,
-    borderLeftColor: '#FF9800',
+    borderLeftColor: Colors.orange40,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.ui03,
   },
-  taskAlertText: {
+  alertIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.ui02,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.spacing05,
+  },
+  alertContent: {
     flex: 1,
-    marginLeft: 12,
   },
-  taskAlertTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+  alertTitle: {
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing02,
   },
-  taskAlertSubtitle: {
-    fontSize: 12,
-    color: '#666',
+  alertDescription: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
   },
-  chartCard: {
-    backgroundColor: '#fff',
-    margin: 24,
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
-  chart: {
-    borderRadius: 8,
-  },
-  chartSubtext: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  sectionCard: {
-    backgroundColor: '#fff',
-    margin: 24,
-    marginTop: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  section: {
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing05,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.spacing05,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
   },
-  seeAllText: {
-    fontSize: 14,
-    color: '#2E7D32',
-    fontWeight: '500',
+  sectionLink: {
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.link01,
   },
-  activitySummary: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 12,
+  list: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.ui03,
   },
-  activityItem: {
+  listItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    alignItems: 'center',
+    paddingVertical: Spacing.spacing05,
   },
-  activityIcon: {
+  listItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.ui03,
+  },
+  listItemIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.green10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.spacing05,
   },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  activityDescription: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  activityDate: {
-    fontSize: 11,
-    color: '#999',
-  },
-  plotItem: {
-    flexDirection: 'row',
+  plotIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
+    backgroundColor: Colors.ui02,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    marginRight: Spacing.spacing05,
   },
   plotIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  plotEmoji: {
     fontSize: 24,
   },
-  plotContent: {
+  listItemContent: {
     flex: 1,
   },
-  plotName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+  listItemTitle: {
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
+    marginBottom: Spacing.spacing02,
   },
-  plotDetails: {
-    fontSize: 12,
-    color: '#666',
+  listItemDescription: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
   },
-  plotStatus: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+  listItemDate: {
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text03,
+  },
+  tag: {
+    height: 24,
+    paddingHorizontal: Spacing.spacing03,
     borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  plotStatusText: {
-    fontSize: 11,
-    fontWeight: '600',
+  tagGreen: {
+    backgroundColor: Colors.green10,
+  },
+  tagText: {
+    fontSize: Typography.fontSize.caption01,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.green60,
   },
 });

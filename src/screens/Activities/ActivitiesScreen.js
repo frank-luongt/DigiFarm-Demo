@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '../../context/DataContext';
+import { Colors, Typography, Spacing, BorderRadius, IconSize, Elevation } from '../../theme/design-tokens';
 
 export default function ActivitiesScreen({ navigation }) {
   const { activities, plots } = useData();
   const [filterType, setFilterType] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const activityTypes = [
     'All',
@@ -52,15 +54,15 @@ export default function ActivitiesScreen({ navigation }) {
 
   const getActivityColor = (type) => {
     const colors = {
-      Planting: '#4CAF50',
-      Irrigation: '#2196F3',
-      Fertilization: '#FF9800',
-      'Pest Control': '#F44336',
-      Weeding: '#8BC34A',
-      Maintenance: '#9C27B0',
-      Monitoring: '#00BCD4',
+      Planting: Colors.green50,
+      Irrigation: Colors.blue50,
+      Fertilization: Colors.orange40,
+      'Pest Control': Colors.red50,
+      Weeding: Colors.green40,
+      Maintenance: Colors.purple40,
+      Monitoring: Colors.teal40,
     };
-    return colors[type] || '#757575';
+    return colors[type] || Colors.gray60;
   };
 
   const getPlotName = (plotId) => {
@@ -69,14 +71,22 @@ export default function ActivitiesScreen({ navigation }) {
   };
 
   const ActivityCard = ({ activity }) => (
-    <TouchableOpacity style={styles.activityCard}>
+    <TouchableOpacity style={styles.activityCard} activeOpacity={0.8}>
+      <View style={[
+        styles.activityBorder,
+        { backgroundColor: getActivityColor(activity.type) }
+      ]} />
       <View
         style={[
           styles.activityIconContainer,
-          { backgroundColor: getActivityColor(activity.type) },
+          { backgroundColor: Colors.ui02 },
         ]}
       >
-        <Ionicons name={getActivityIcon(activity.type)} size={24} color="#fff" />
+        <Ionicons
+          name={getActivityIcon(activity.type)}
+          size={IconSize.md}
+          color={getActivityColor(activity.type)}
+        />
       </View>
       <View style={styles.activityContent}>
         <View style={styles.activityHeader}>
@@ -88,28 +98,28 @@ export default function ActivitiesScreen({ navigation }) {
         <Text style={styles.activityDescription}>{activity.description}</Text>
         <View style={styles.activityMeta}>
           <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={14} color="#666" />
+            <Ionicons name="location-outline" size={IconSize.sm} color={Colors.icon02} />
             <Text style={styles.metaText}>{getPlotName(activity.plotId)}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Ionicons name="leaf-outline" size={14} color="#666" />
+            <Ionicons name="leaf-outline" size={IconSize.sm} color={Colors.icon02} />
             <Text style={styles.metaText}>{activity.cropType}</Text>
           </View>
           {activity.laborHours && (
             <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={14} color="#666" />
+              <Ionicons name="time-outline" size={IconSize.sm} color={Colors.icon02} />
               <Text style={styles.metaText}>{activity.laborHours}h</Text>
             </View>
           )}
         </View>
         {activity.notes && (
           <View style={styles.notesContainer}>
-            <Ionicons name="document-text-outline" size={14} color="#999" />
+            <Ionicons name="document-text-outline" size={IconSize.sm} color={Colors.icon02} />
             <Text style={styles.notesText}>{activity.notes}</Text>
           </View>
         )}
         {activity.laborCost && (
-          <Text style={styles.costText}>Cost: ₹{activity.laborCost.toLocaleString()}</Text>
+          <Text style={styles.costText}>Cost: ₫{activity.laborCost.toLocaleString()}</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -118,13 +128,19 @@ export default function ActivitiesScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+      <View style={[
+        styles.searchContainer,
+        searchFocused && styles.searchContainerFocused
+      ]}>
+        <Ionicons name="search" size={IconSize.md} color={Colors.icon02} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search activities..."
+          placeholderTextColor={Colors.text03}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
         />
       </View>
 
@@ -143,6 +159,7 @@ export default function ActivitiesScreen({ navigation }) {
               filterType === type && styles.filterChipActive,
             ]}
             onPress={() => setFilterType(type)}
+            activeOpacity={0.8}
           >
             <Text
               style={[
@@ -157,7 +174,7 @@ export default function ActivitiesScreen({ navigation }) {
       </ScrollView>
 
       {/* Activities List */}
-      <ScrollView style={styles.listContainer}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.listHeader}>
           <Text style={styles.listTitle}>
             {filteredActivities.length} {filteredActivities.length === 1 ? 'Activity' : 'Activities'}
@@ -170,7 +187,7 @@ export default function ActivitiesScreen({ navigation }) {
 
         {filteredActivities.length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="leaf-outline" size={64} color="#ccc" />
+            <Ionicons name="leaf-outline" size={64} color={Colors.ui03} />
             <Text style={styles.emptyStateText}>No activities found</Text>
             <Text style={styles.emptyStateSubtext}>
               Try adjusting your filters or add a new activity
@@ -178,15 +195,16 @@ export default function ActivitiesScreen({ navigation }) {
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: Spacing.spacing13 }} />
       </ScrollView>
 
       {/* Add Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('AddActivity')}
+        activeOpacity={0.8}
       >
-        <Ionicons name="add" size={32} color="#fff" />
+        <Ionicons name="add" size={IconSize.xl} color={Colors.text04} />
       </TouchableOpacity>
     </View>
   );
@@ -195,88 +213,100 @@ export default function ActivitiesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.ui02,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    margin: Spacing.spacing05,
+    paddingHorizontal: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.ui03,
+  },
+  searchContainerFocused: {
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.focus,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: Spacing.spacing03,
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingVertical: Spacing.spacing04,
+    fontSize: Typography.fontSize.bodyShort02,
+    color: Colors.text01,
   },
   filterContainer: {
-    marginBottom: 16,
+    marginBottom: Spacing.spacing05,
   },
   filterContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.spacing05,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    marginRight: 8,
+    paddingHorizontal: Spacing.spacing05,
+    paddingVertical: Spacing.spacing03,
+    backgroundColor: Colors.ui01,
+    borderRadius: BorderRadius.sm,
+    marginRight: Spacing.spacing03,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.ui03,
   },
   filterChipActive: {
-    backgroundColor: '#2E7D32',
-    borderColor: '#2E7D32',
+    backgroundColor: Colors.interactive,
+    borderColor: Colors.interactive,
   },
   filterChipText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
   },
   filterChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: Colors.text04,
+    fontWeight: Typography.fontWeight.semibold,
   },
   listContainer: {
     flex: 1,
   },
   listHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: Spacing.spacing05,
+    paddingBottom: Spacing.spacing04,
   },
   listTitle: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: Typography.fontSize.label01,
+    color: Colors.text02,
+    fontWeight: Typography.fontWeight.semibold,
   },
   activityCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.ui01,
+    marginHorizontal: Spacing.spacing05,
+    marginBottom: Spacing.spacing04,
+    padding: Spacing.spacing05,
+    borderRadius: BorderRadius.default,
+    borderWidth: 1,
+    borderColor: Colors.ui03,
+    position: 'relative',
+  },
+  activityBorder: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: BorderRadius.default,
+    borderBottomLeftRadius: BorderRadius.default,
   },
   activityIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.default,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: Spacing.spacing05,
+    marginLeft: Spacing.spacing03,
   },
   activityContent: {
     flex: 1,
@@ -285,89 +315,85 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: Spacing.spacing02,
   },
   activityType: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: Typography.fontSize.bodyShort02,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text01,
   },
   activityDate: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text03,
   },
   activityDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text02,
+    marginBottom: Spacing.spacing03,
   },
   activityMeta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    marginBottom: Spacing.spacing03,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
-    marginBottom: 4,
+    marginRight: Spacing.spacing05,
+    marginBottom: Spacing.spacing02,
   },
   metaText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing02,
   },
   notesContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#F5F5F5',
-    padding: 8,
-    borderRadius: 6,
-    marginBottom: 8,
+    backgroundColor: Colors.ui02,
+    padding: Spacing.spacing03,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.spacing03,
   },
   notesText: {
     flex: 1,
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 6,
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.text02,
+    marginLeft: Spacing.spacing03,
   },
   costText: {
-    fontSize: 12,
-    color: '#2E7D32',
-    fontWeight: '600',
+    fontSize: Typography.fontSize.caption01,
+    color: Colors.green50,
+    fontWeight: Typography.fontWeight.semibold,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 64,
+    paddingVertical: Spacing.spacing10,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
+    fontSize: Typography.fontSize.productiveHeading03,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text03,
+    marginTop: Spacing.spacing05,
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: '#ccc',
-    marginTop: 8,
+    fontSize: Typography.fontSize.bodyShort01,
+    color: Colors.text03,
+    marginTop: Spacing.spacing03,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.spacing07,
   },
   fab: {
     position: 'absolute',
-    right: 24,
-    bottom: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#2E7D32',
+    right: Spacing.spacing06,
+    bottom: Spacing.spacing06,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.interactive,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    ...Elevation.shadow03,
   },
 });

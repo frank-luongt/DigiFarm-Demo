@@ -36,7 +36,19 @@ export const DataProvider = ({ children }) => {
       const transactionsData = await AsyncStorage.getItem('transactions');
       const tasksData = await AsyncStorage.getItem('tasks');
 
-      if (userData) setUser(JSON.parse(userData));
+      // Initialize user if not exists
+      if (userData) {
+        setUser(JSON.parse(userData));
+      } else {
+        const defaultUser = {
+          name: 'Luong Tuan Thanh',
+          phone: '907270184',
+          email: 'luongthanh@digifarm.vn',
+        };
+        await AsyncStorage.setItem('user', JSON.stringify(defaultUser));
+        setUser(defaultUser);
+      }
+
       if (farmsData) setFarms(JSON.parse(farmsData));
       if (plotsData) setPlots(JSON.parse(plotsData));
       if (activitiesData) setActivities(JSON.parse(activitiesData));
